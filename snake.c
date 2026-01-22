@@ -1,35 +1,32 @@
 #include <stdio.h>
-#include <conio.h>   // Required for _kbhit() and _getch()
-#include <windows.h> // Required for Sleep()
-#include <stdlib.h>  // Required for rand(), srand()
-#include <time.h>    // Required for time()
+#include <conio.h>   
+#include <windows.h> 
+#include <stdlib.h>  
+#include <time.h>    
 #include <string.h>
 
-// --- GAME CONFIGURATION ---
-#define WIDTH 20      // Fixed width [cite: 38]
-#define HEIGHT 10     // Fixed height [cite: 38]
-#define CHAR_WALL '#' // [cite: 39]
-#define CHAR_SNAKE 'O'// [cite: 49]
-#define CHAR_FOOD '*' // [cite: 60]
-#define CHAR_EMPTY ' '// [cite: 40]
 
-// --- GLOBAL VARIABLES ---
-int x, y;                // Snake Head coordinates
-int foodX, foodY;        // Food coordinates
-int score;               // Current score
-int gameOver;            // Game state flag
-int tailX[100], tailY[100]; // Arrays to store tail coordinates
-int nTail;               // Current length of tail
-enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN }; // Directions
+#define WIDTH 20      
+#define HEIGHT 10     
+#define CHAR_WALL '#' 
+#define CHAR_SNAKE 'O'
+#define CHAR_FOOD '*' 
+#define CHAR_EMPTY ' '
+
+int x, y;                
+int foodX, foodY;       
+int score;               
+int gameOver;           
+int tailX[100], tailY[100]; 
+int nTail;               
+enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
 enum eDirection dir;
 
-// --- LEADERBOARD STRUCTURE ---
 struct Player {
     char name[50];
     int score;
 };
 
-// --- FUNCTION PROTOTYPES ---
 void Setup();
 void Draw();
 void Input();
@@ -39,27 +36,24 @@ void HandleLeaderboard();
 int main() {
     Setup();
     
-    // --- START SCREEN ---
-    Draw(); // Draw board once so user sees it
+    Draw();
     printf("\n --- SNAKE GAME --- \n");
     printf(" Controls: W, A, S, D  OR  Arrow Keys\n");
     printf(" Press ANY KEY to start running...");
     
-    // This waits for a click before the loop starts
-    if (_getch() == 224) _getch(); // Clear buffer if arrow key pressed
-    // --------------------
+    if (_getch() == 224) _getch();
 
     // Game Loop
     while (!gameOver) {
         Draw();
         Input();
         Logic();
-        Sleep(100); // [cite: 64]
+        Sleep(100); 
     }
 
     // End Game
     printf("\nGAME OVER!\n");
-    printf("Final Score: %d\n", score); // [cite: 75]
+    printf("Final Score: %d\n", score);
     HandleLeaderboard();
 
     printf("\nPress any key to exit...");
@@ -67,17 +61,17 @@ int main() {
     return 0;
 }
 
-// --- 1. SETUP ---
+// ---SETUP ---
 void Setup() {
     srand(time(0)); 
     gameOver = 0;
-    dir = RIGHT;    // [cite: 51]
+    dir = RIGHT;   
     
-    // Start in the middle
+    // snake position
     x = WIDTH / 2;
     y = HEIGHT / 2;
 
-    // Initial Length = 3 [cite: 50]
+    // Snake length
     nTail = 2; 
     tailX[0] = x - 1; tailY[0] = y;
     tailX[1] = x - 2; tailY[1] = y;
@@ -89,11 +83,11 @@ void Setup() {
     foodY = rand() % (HEIGHT - 2) + 1;
 }
 
-// --- 2. DRAW ---
+// ---DRAW ---
 void Draw() {
     system("cls"); 
 
-    printf("SCORE: %d\n", score); // [cite: 74]
+    printf("SCORE: %d\n", score); 
 
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
@@ -128,37 +122,34 @@ void Draw() {
     }
 }
 
-// --- 3. INPUT (Updated for WASD + ARROW KEYS) ---
+// --- INPUT OF KEYS ---
 void Input() {
     if (_kbhit()) { 
         int key = _getch();
         
-        // Check for Arrow Keys (they return 224 first)
         if (key == 224) {
-            key = _getch(); // Get the actual arrow code
+            key = _getch(); 
             switch (key) {
-                case 75: if(dir != RIGHT) dir = LEFT; break;  // Left Arrow
-                case 77: if(dir != LEFT) dir = RIGHT; break;  // Right Arrow
-                case 72: if(dir != DOWN) dir = UP; break;     // Up Arrow
-                case 80: if(dir != UP) dir = DOWN; break;     // Down Arrow
+                case 75: if(dir != RIGHT) dir = LEFT; break;  
+                case 77: if(dir != LEFT) dir = RIGHT; break;  
+                case 72: if(dir != DOWN) dir = UP; break;     
+                case 80: if(dir != UP) dir = DOWN; break;     
             }
         } 
-        // Standard WASD Keys
         else {
             switch (key) {
-                case 'a': case 'A': if(dir != RIGHT) dir = LEFT; break; // [cite: 57]
-                case 'd': case 'D': if(dir != LEFT) dir = RIGHT; break; // [cite: 58]
-                case 'w': case 'W': if(dir != DOWN) dir = UP; break;    // [cite: 54]
-                case 's': case 'S': if(dir != UP) dir = DOWN; break;    // [cite: 56]
+                case 'a': case 'A': if(dir != RIGHT) dir = LEFT; break;
+                case 'd': case 'D': if(dir != LEFT) dir = RIGHT; break; 
+                case 'w': case 'W': if(dir != DOWN) dir = UP; break;    
+                case 's': case 'S': if(dir != UP) dir = DOWN; break;    
                 case 'x': gameOver = 1; break; 
             }
         }
     }
 }
 
-// --- 4. LOGIC ---
+// ---LOGIC---
 void Logic() {
-    // Update Tail positions
     int prevX = tailX[0];
     int prevY = tailY[0];
     int prev2X, prev2Y;
@@ -174,7 +165,6 @@ void Logic() {
         prevY = prev2Y;
     }
 
-    // Move Head
     switch (dir) {
         case LEFT:  x--; break;
         case RIGHT: x++; break;
@@ -183,12 +173,10 @@ void Logic() {
         default: break;
     }
 
-    // Wall Collision [cite: 71]
     if (x <= 0 || x >= WIDTH - 1 || y <= 0 || y >= HEIGHT - 1) {
         gameOver = 1;
     }
-
-    // Self Collision [cite: 73]
+    
     for (int i = 0; i < nTail; i++) {
         if (tailX[i] == x && tailY[i] == y) {
             gameOver = 1;
@@ -197,10 +185,9 @@ void Logic() {
 
     // Eating Food
     if (x == foodX && y == foodY) {
-        score += 10; // [cite: 68]
-        nTail++;     // [cite: 65]
+        score += 10;
+        nTail++;     
         
-        // Respawn food
         int valid = 0;
         while (!valid) {
             valid = 1;
@@ -215,7 +202,7 @@ void Logic() {
     }
 }
 
-// --- 5. LEADERBOARD ---
+// ---LEADERBOARD ---
 void HandleLeaderboard() {
     FILE *fp;
     struct Player players[4]; 
@@ -254,7 +241,7 @@ void HandleLeaderboard() {
         return;
     }
     
-    printf("\n--- TOP 3 PLAYERS ---\n"); // [cite: 76]
+    printf("\n--- TOP 3 PLAYERS ---\n");
     for (int i = 0; i < count && i < 3; i++) {
         fprintf(fp, "%s %d\n", players[i].name, players[i].score);
         printf("%d. %s - %d\n", i + 1, players[i].name, players[i].score);
